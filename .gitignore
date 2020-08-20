@@ -13,3 +13,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+/.idea/modules.xml
+/.idea/KeepMeBot.iml
+/.idea/workspace.xml
+/.idea/vcs.xml
