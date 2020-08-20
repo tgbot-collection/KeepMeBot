@@ -1,8 +1,6 @@
 OS = darwin linux windows
 ARCH = amd64
 default:
-	@echo "Installing dependencies..."
-
 	@echo "Build executables..."
 	@for o in $(OS) ; do            \
 		for a in $(ARCH) ; do     \
