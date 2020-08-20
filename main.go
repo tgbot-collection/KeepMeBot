@@ -15,7 +15,7 @@ var b, err = tb.NewBot(tb.Settings{
 })
 
 func main() {
-
+	// executor
 	if err != nil {
 		log.Fatal(err)
 		return
