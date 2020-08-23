@@ -1,0 +1,19 @@
+version: '3.1'
+
+services:
+  docker:
+    image: docker:dind
+    restart: always
+    environment:
+      DOCKER_TLS_CERTDIR:
+    privileged: true
+
+
+  runner:
+    image: docker
+    restart: on-failure
+    depends_on:
+      - docker
+    #    build: .
+    command: docker ps
+    # could also use ubuntu, we just se environment DOCKER_HOST=tcp://docker:2375

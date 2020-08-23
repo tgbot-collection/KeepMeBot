@@ -4,7 +4,7 @@ default:
 	@echo "Build executables..."
 	@for o in $(OS) ; do            \
 		for a in $(ARCH) ; do     \
-			CGO_ENABLED=0 GOOS=$$o GOARCH=$$a go build -ldflags="-s -w" -o builds/keepmebot-$$o-$$a main.go;    \
+			CGO_ENABLED=0 GOOS=$$o GOARCH=$$a go build -ldflags="-s -w" -o builds/keepmebot-$$o-$$a .;    \
 		done                              \
 	done
 	# cd builds;upx *
