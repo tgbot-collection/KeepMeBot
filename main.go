@@ -14,7 +14,7 @@ import (
 )
 import "github.com/robfig/cron/v3"
 
-var token = os.Getenv("token")
+var token = os.Getenv("TOKEN")
 var b, _ = tb.NewBot(tb.Settings{
 	Token:  token,
 	Poller: &tb.LongPoller{Timeout: 10 * time.Second},

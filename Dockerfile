@@ -1,11 +1,14 @@
-FROM alpine
+FROM docker
 
-# TODO
-RUN apk update && apk add wget && wget -O /APP https://github.com/BennyThink/xxx
+ENV GO111MODULE=on
+
+RUN apk update && apk add --no-cache git make musl-dev go && \
+git clone https://github.com/BennyThink/KeepMeBot /APP
+
 WORKDIR /APP
-
-CMD /APP/restblog
+RUN go build -o main .
+CMD /APP/main
 
 # usage
-# docker build -t yyetsbot .
-# docker run -d --restart=always -e TOKEN="TOKEN" bennythink/yyetsbot
+# docker build -t keepmebot .
+# docker run -d -e TOKEN="13faT8" keepmebot

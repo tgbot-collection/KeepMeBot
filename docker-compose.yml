@@ -10,10 +10,12 @@ services:
 
 
   runner:
-    image: docker
+    image: bennythink/keepmebot
+    # build: .
+    env_file:
+      - config.env
     restart: on-failure
     depends_on:
       - docker
-    #    build: .
-    command: docker ps
+    command: /APP/main
     # could also use ubuntu, we just se environment DOCKER_HOST=tcp://docker:2375
