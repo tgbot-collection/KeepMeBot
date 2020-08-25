@@ -19,11 +19,9 @@ var b, _ = tb.NewBot(tb.Settings{
 	Token:  token,
 	Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 })
-
 var cache = make(map[int]string)
 
 func main() {
-
 	log.SetOutput(os.Stdout)
 	log.SetReportCaller(true)
 	Formatter := &log.TextFormatter{
@@ -53,8 +51,7 @@ func main() {
 	c.Start()
 
 	b.Handle("/add", add)
-	b.Handle(tb.OnCallback, on)
-	b.Handle(tb.OnText, text)
+	b.Handle(tb.OnText, onText)
 	b.Handle("/start", start)
 	log.Infoln("I'm running...")
 	b.Start()
