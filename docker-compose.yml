@@ -12,6 +12,8 @@ services:
   runner:
     image: bennythink/keepmebot
     # build: .
+    environment:
+      DOCKER_HOST: tcp://docker:2375
     env_file:
       - config.env
     restart: on-failure
