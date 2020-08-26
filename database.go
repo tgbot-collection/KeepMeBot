@@ -84,6 +84,16 @@ func getServiceArray() (supportedService []Service, err error) {
 	}
 	return
 }
+
+func getQueueList(userid int) (q []Queue) {
+	DB.Where("user_id=?", userid).Find(&q)
+	return
+}
+
+func deleteQueue(qid string) {
+	DB.Where("id=?", qid).Delete(&Queue{})
+}
+
 func getServiceMap() map[string]Service {
 	var a = make(map[string]Service)
 	arr, _ := getServiceArray()
@@ -105,7 +115,7 @@ func addQueue(userid int, username, keepType string, inputs ...interface{}) (mes
 	DB.Model(&Queue{}).Where("user_id = ? and service_type=?", userid, keepType).Count(&count)
 
 	if count > service.Max {
-		message = fmt.Sprintf("Your limit is %d, you are using %d", service.Max, service)
+		message = fmt.Sprintf("Your limit is %d, you are using %d", service.Max, count)
 	} else {
 		d := Queue{
 			UserID:      userid,

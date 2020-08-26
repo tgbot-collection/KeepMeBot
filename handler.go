@@ -23,7 +23,7 @@ func add(m *tb.Message) {
 	services, _ := getServiceArray()
 	var btns []tb.Btn
 	for _, v := range services {
-		btn := selector.Data(v.Name, fmt.Sprintf("AddServiceButton%d", v.ID), v.Name)
+		btn := selector.Data(v.Name, fmt.Sprintf("AddServiceButton%d%d", v.ID, m.Sender.ID), v.Name)
 		registerButtonNextStep(btn, addServiceButton)
 		btns = append(btns, btn)
 	}
@@ -42,9 +42,20 @@ func addServiceButton(c *tb.Callback) {
 	setSession(c.Sender.ID, c.Data)
 }
 
+func removeServiceButton(c *tb.Callback) {
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Ok"})
+	deleteQueue(c.Data)
+	_, _ = b.Send(c.Sender, fmt.Sprintf("Id %s has been deleted ", c.Data))
+}
+
 func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
 	log.Infoln("Registering ", btn.Unique)
 	b.Handle(&btn, fun)
+}
+
+func onCallback(c *tb.Callback) {
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "You seem to delete an outdated button"})
+	_, _ = b.Send(c.Sender, "You seem to delete an outdated button")
 }
 
 func onText(m *tb.Message) {
@@ -77,4 +88,34 @@ func github(m *tb.Message) (message string) {
 	message = addQueue(m.Sender.ID, m.Sender.Username, "GitHub", text+" "+dest, dest)
 	deleteSession(m.Sender.ID)
 	return
+}
+
+func list(m *tb.Message) {
+	queue := getQueueList(m.Sender.ID)
+
+	if len(queue) == 0 {
+		_, _ = b.Send(m.Sender, "you dont seem to have any services")
+		return
+	}
+	var inlineKeys [][]tb.InlineButton
+	for i, v := range queue {
+		var temp = tb.InlineButton{
+			Unique: fmt.Sprintf("DeleteServiceButton%d%d", v.ID, m.Sender.ID),
+			Text:   fmt.Sprintf("%d. %s", i+1, v.Command),
+			Data:   fmt.Sprintf("%d", v.ID),
+		}
+		var b = tb.Btn{
+			Unique: temp.Unique,
+			Text:   temp.Text,
+			Data:   temp.Data,
+		}
+		registerButtonNextStep(b, removeServiceButton)
+		inlineKeys = append(inlineKeys, []tb.InlineButton{temp})
+	}
+
+	_ = b.Notify(m.Sender, tb.Typing)
+	_, _ = b.Send(m.Sender, "Select to delete service", &tb.ReplyMarkup{
+		InlineKeyboard: inlineKeys,
+	})
+
 }

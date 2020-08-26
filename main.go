@@ -51,7 +51,9 @@ func main() {
 
 	b.Handle("/add", add)
 	b.Handle(tb.OnText, onText)
+	b.Handle(tb.OnCallback, onCallback)
 	b.Handle("/start", start)
+	b.Handle("/list", list)
 	log.Infoln("I'm running...")
 	b.Start()
 }
