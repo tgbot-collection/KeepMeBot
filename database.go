@@ -7,7 +7,6 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"strings"
 )
 
@@ -46,6 +45,12 @@ type History struct {
 	Output   string
 }
 
+type Session struct {
+	BaseModel
+	UserID int `gorm:"unique"`
+	Next   string
+}
+
 func init() {
 	var supportedService = []Service{
 		{
@@ -66,7 +71,7 @@ func init() {
 	}
 
 	// Migrate the schema
-	DB.AutoMigrate(&Service{}, &Queue{}, &History{})
+	DB.AutoMigrate(&Service{}, &Queue{}, &History{}, &Session{})
 
 	// 创建
 	DB.Unscoped().Delete(&Service{})
@@ -92,33 +97,54 @@ func getServiceMap() map[string]Service {
 	return a
 }
 
-func addQueue(m *tb.Message, keepType string) (status string, realCommand string) {
+func addQueue(userid int, username, text, keepType string) (message string) {
 	// user id, commands
 	s := getServiceMap()
 	data := s[keepType]
 	format := strings.Count(data.Command, "%s")
 	var inputs []interface{}
 	for i := 0; i < format; i++ {
-		inputs = append(inputs, shellescape.Quote(m.Text)) // not good
+		inputs = append(inputs, shellescape.Quote(text)) // not good
 	}
-	realCommand = fmt.Sprintf(data.Command, inputs...)
+	realCommand := fmt.Sprintf(data.Command, inputs...)
 	// max than 5?
 	count := 0
-	DB.Model(&Queue{}).Where("user_id = ? and service_type=?", m.Sender.ID, keepType).Count(&count)
+	DB.Model(&Queue{}).Where("user_id = ? and service_type=?", userid, keepType).Count(&count)
 
 	if count > data.Max {
-		status = fmt.Sprintf("Your limit is %d, you are using %d", data.Max, data)
+		message = fmt.Sprintf("Your limit is %d, you are using %d", data.Max, data)
 	} else {
 		d := Queue{
-			BaseModel:   BaseModel{},
-			UserID:      m.Sender.ID,
-			UserName:    m.Sender.Username,
+			UserID:      userid,
+			UserName:    username,
 			Command:     realCommand,
 			ServiceType: keepType,
 		}
 		DB.Create(&d)
-		status = "Success!"
+		message = fmt.Sprintf("%s Your command is `%s`", "Success!", realCommand)
 	}
-	DB.Find(&Queue{})
 	return
+}
+
+func setSession(id int, next string) {
+	// create or update
+	session := Session{
+		UserID: id,
+		Next:   next,
+	}
+	DB.Save(&session)
+
+}
+
+func getSession(id int) string {
+	session := Session{}
+	DB.Where("user_id=?", id).First(&session)
+	return session.Next
+}
+
+func deleteSession(id int) {
+	session := Session{
+		UserID: id,
+	}
+	DB.Unscoped().Delete(&session)
 }

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"strings"
 )
 
 func start(m *tb.Message) {
@@ -38,8 +37,7 @@ func add(m *tb.Message) {
 func addServiceButton(c *tb.Callback) {
 	_ = b.Respond(c, &tb.CallbackResponse{Text: "Ok"})
 	_, _ = b.Send(c.Sender, fmt.Sprintf("You choose %s, now tell me your address ", c.Data))
-	cache[c.Sender.ID] = strings.Replace(c.Data, " ", "", -1)
-
+	setSession(c.Sender.ID, c.Data)
 }
 
 func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
@@ -47,36 +45,31 @@ func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
 	b.Handle(&btn, fun)
 }
 
-func addDockerHub(m *tb.Message) string {
-	data := Queue{
-		UserID:      m.Sender.ID,
-		UserName:    m.Sender.Username,
-		Command:     m.Text,
-		ServiceType: "Docker Hub",
-	}
-	if err := DB.Create(&data).Error; err != nil {
-		return err.Error()
-	} else {
-		return "Your command has been add to Queue"
-	}
-}
 func onText(m *tb.Message) {
-
-	if value, found := cache[m.Sender.ID]; found {
-		var message string
-		switch value {
-		case "GitHub":
-			message = addDockerHub(m)
-		case "DockerHub":
-			message = addDockerHub(m)
-		default:
-			message = "Not register action"
-		}
-		delete(cache, m.Sender.ID)
-		_, _ = b.Send(m.Sender, message)
-
-	} else {
-		_, _ = b.Send(m.Sender, "hello there")
-
+	current := getSession(m.Sender.ID)
+	var message string
+	switch current {
+	case "Docker Hub":
+		message = dockerhub(m)
+	case "GitHub":
+		message = github(m)
+	default:
+		message = "hello"
 	}
+	_, _ = b.Send(m.Sender, message, &tb.SendOptions{
+		ParseMode: tb.ModeMarkdown,
+	})
+
+}
+
+func dockerhub(m *tb.Message) (message string) {
+	message = addQueue(m.Sender.ID, m.Sender.Username, m.Text, "Docker Hub")
+	deleteSession(m.Sender.ID)
+	return
+}
+
+func github(m *tb.Message) (message string) {
+	message = addQueue(m.Sender.ID, m.Sender.Username, m.Text, "GitHub")
+	deleteSession(m.Sender.ID)
+	return
 }
