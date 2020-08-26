@@ -7,10 +7,12 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/alessio/shellescape.v1"
+
 	tb "gopkg.in/tucnak/telebot.v2"
 )
-import "gopkg.in/alessio/shellescape.v1"
 
 func start(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)

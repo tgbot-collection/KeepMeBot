@@ -6,13 +6,12 @@ import (
 	"runtime"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
-)
-import log "github.com/sirupsen/logrus"
-import (
+
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/robfig/cron/v3"
 )
-import "github.com/robfig/cron/v3"
 
 var token = os.Getenv("TOKEN")
 var b, _ = tb.NewBot(tb.Settings{
