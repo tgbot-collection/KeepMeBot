@@ -8,6 +8,7 @@ package main
 
 // currently supported command list
 import (
+	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"os/exec"
@@ -23,20 +24,27 @@ func scheduler() {
 	for i, v := range tasks {
 		log.Infof("Executing [%d/%d]: %s - %s(%d)", i+1, len(tasks), v.Command, v.UserName, v.UserID)
 
-		out, err := exec.Command("bash", "-c", v.Command).Output()
+		var message string
+		cmd := exec.Command("bash", "-c", v.Command)
+		var out bytes.Buffer
+		var stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		err := cmd.Run()
 		if err != nil {
-			message := fmt.Sprintf("Command failed %s", err)
+			message = fmt.Sprintf("%s %s", err, stderr.String())
 			log.Warningln(message)
-			out = []byte(message)
 		} else {
-			log.Infof("%s", out)
+			message = out.String()
+			log.Infof(message)
 		}
+
 		h := History{
 			BaseModel: BaseModel{},
 			UserID:    v.UserID,
 			UserName:  v.UserName,
 			Command:   v.Command,
-			Output:    string(out),
+			Output:    message,
 		}
 		DB.Create(&h)
 	}

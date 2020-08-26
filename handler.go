@@ -5,10 +5,12 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
+import "gopkg.in/alessio/shellescape.v1"
 
 func start(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)
@@ -63,13 +65,16 @@ func onText(m *tb.Message) {
 }
 
 func dockerhub(m *tb.Message) (message string) {
-	message = addQueue(m.Sender.ID, m.Sender.Username, m.Text, "Docker Hub")
+	text := shellescape.Quote(m.Text)
+	message = addQueue(m.Sender.ID, m.Sender.Username, "Docker Hub", text, text)
 	deleteSession(m.Sender.ID)
 	return
 }
 
 func github(m *tb.Message) (message string) {
-	message = addQueue(m.Sender.ID, m.Sender.Username, m.Text, "GitHub")
+	text := shellescape.Quote(m.Text)
+	dest := fmt.Sprintf("%x", md5.Sum([]byte(text)))
+	message = addQueue(m.Sender.ID, m.Sender.Username, "GitHub", text+" "+dest, dest)
 	deleteSession(m.Sender.ID)
 	return
 }

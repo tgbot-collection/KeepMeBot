@@ -7,10 +7,7 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
-	"strings"
 )
-
-import "gopkg.in/alessio/shellescape.v1"
 
 // SQLite
 
@@ -97,22 +94,18 @@ func getServiceMap() map[string]Service {
 	return a
 }
 
-func addQueue(userid int, username, text, keepType string) (message string) {
+func addQueue(userid int, username, keepType string, inputs ...interface{}) (message string) {
 	// user id, commands
 	s := getServiceMap()
-	data := s[keepType]
-	format := strings.Count(data.Command, "%s")
-	var inputs []interface{}
-	for i := 0; i < format; i++ {
-		inputs = append(inputs, shellescape.Quote(text)) // not good
-	}
-	realCommand := fmt.Sprintf(data.Command, inputs...)
-	// max than 5?
+	service := s[keepType]
+
+	realCommand := fmt.Sprintf(service.Command, inputs...)
+	// max than 5
 	count := 0
 	DB.Model(&Queue{}).Where("user_id = ? and service_type=?", userid, keepType).Count(&count)
 
-	if count > data.Max {
-		message = fmt.Sprintf("Your limit is %d, you are using %d", data.Max, data)
+	if count > service.Max {
+		message = fmt.Sprintf("Your limit is %d, you are using %d", service.Max, service)
 	} else {
 		d := Queue{
 			UserID:      userid,

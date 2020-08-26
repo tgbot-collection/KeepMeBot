@@ -19,7 +19,6 @@ var b, _ = tb.NewBot(tb.Settings{
 	Token:  token,
 	Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 })
-var cache = make(map[int]string)
 
 func main() {
 	log.SetOutput(os.Stdout)
