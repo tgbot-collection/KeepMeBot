@@ -13,9 +13,13 @@ git clone https://github.com/BennyThink/KeepMeBot
 cd KeepMeBot
 # change your token here, you may also add other environment variables such as `http_proxy`
 vim config.env
+# create your db
+touch keep.db
 docker-compose up -d
 
 ```
+### How to update using docker-compose
+1. Use docker pull to update docker-image, and run again
 
 ## License
 MIT

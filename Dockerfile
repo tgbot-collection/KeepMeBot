@@ -4,7 +4,7 @@ ENV GO111MODULE=on
 
 WORKDIR /APP
 
-RUN apk update && apk add --no-cache git make musl-dev go && \
+RUN apk update && apk add --no-cache git make musl-dev go sqlite && \
 git clone https://github.com/BennyThink/KeepMeBot /APP && go build -o main .
 
 CMD /APP/main

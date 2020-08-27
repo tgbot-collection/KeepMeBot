@@ -11,7 +11,7 @@ services:
 
   runner:
     image: bennythink/keepmebot
-    # build: .
+#    build: .
     environment:
       DOCKER_HOST: tcp://docker:2375
     env_file:
@@ -19,5 +19,8 @@ services:
     restart: on-failure
     depends_on:
       - docker
+    volumes:
+      - ./keep.db:/APP/keep.db
+    working_dir: /APP
     command: /APP/main
     # could also use ubuntu, we just se environment DOCKER_HOST=tcp://docker:2375

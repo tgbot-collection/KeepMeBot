@@ -63,7 +63,7 @@ func init() {
 		},
 	}
 	var err error
-	DB, err = gorm.Open("sqlite3", "keep.DB")
+	DB, err = gorm.Open("sqlite3", "keep.db")
 	if err != nil {
 		panic("failed to connect database")
 	}
