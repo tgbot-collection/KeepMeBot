@@ -14,12 +14,15 @@ import (
 )
 
 var token = os.Getenv("TOKEN")
-var b, _ = tb.NewBot(tb.Settings{
+var b, err = tb.NewBot(tb.Settings{
 	Token:  token,
 	Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 })
 
 func main() {
+	if err != nil {
+		log.Panicf("Please check your network or TOKEN! %v", err)
+	}
 	log.SetOutput(os.Stdout)
 	log.SetReportCaller(true)
 	Formatter := &log.TextFormatter{
@@ -43,9 +46,15 @@ func main() {
 	fmt.Printf("\n %c[1;32m%s%c[0m\n\n", 0x1B, banner, 0x1B)
 
 	c := cron.New()
-	//scheduler()
-	// TODO we should implement different interval for different services
-	_, _ = c.AddFunc("1 1 */3 * *", scheduler)
+	switch os.Getenv("dev") {
+	case "true":
+		scheduler()
+		_, _ = c.AddFunc("* * * * *", scheduler)
+		log.SetLevel(log.DebugLevel)
+	default:
+		_, _ = c.AddFunc("1 1 */3 * *", scheduler)
+	}
+
 	c.Start()
 
 	b.Handle("/add", add)

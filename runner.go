@@ -24,16 +24,17 @@ func scheduler() {
 	DB.Find(&tasks)
 	log.Infof("Total tasks count: %d", len(tasks))
 	for i, v := range tasks {
-		log.Infof("[%s]Executing [%d/%d]: %s - %s(%d)", v.Service.ServiceType,
-			i+1, len(tasks), v.Command, v.UserName, v.UserID)
+		log.Infof("Executing [%d/%d]: %s - %s(%d)", i+1, len(tasks), v.Command, v.UserName, v.UserID)
 		var message string
-
-		switch v.Service.ServiceType {
+		var s Service
+		DB.Model(&v).Related(&s)
+		switch s.ServiceType {
 		case "internal":
 			internalExecutor(v)
 		case "external":
 			message = externalExecutor(v)
-
+		default:
+			log.Warningln("404")
 		}
 
 		historyRecorder(v, message)
@@ -42,7 +43,7 @@ func scheduler() {
 
 func externalExecutor(q Queue) string {
 	var message string
-	cmd := exec.Command("bash", "-c", q.Command)
+	cmd := exec.Command("sh", "-c", q.Command)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out

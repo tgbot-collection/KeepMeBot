@@ -6,9 +6,8 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/tucnak/telebot.v2"
-
 	"github.com/jinzhu/gorm"
+	"gopkg.in/tucnak/telebot.v2"
 )
 
 // SQLite
@@ -35,16 +34,18 @@ type Queue struct {
 	UserName  string
 	Parameter string
 	Command   string
-	Service   Service `gorm:"foreignkey:ServiceRefer"`
+	Service   Service
+	ServiceID int
 }
 
 type History struct {
 	BaseModel
-	UserID   int
-	UserName string
-	Command  string
-	Output   string
-	Service  Service `gorm:"foreignkey:ServiceRefer"`
+	UserID    int
+	UserName  string
+	Command   string
+	Output    string
+	Service   Service
+	ServiceID int
 }
 
 type Session struct {
@@ -70,10 +71,10 @@ func init() {
 			Command:     "git clone %s && rm -rf %s",
 		},
 		{
-			Name:        "GET",
+			Name:        "get",
 			Max:         10,
 			ServiceType: "internal",
-			Command:     "",
+			Command:     "get %s",
 		},
 	}
 	var err error
@@ -128,11 +129,7 @@ func addQueue(m telebot.Message, serviceName string, inputs ...interface{}) (mes
 	// max than 5
 	count := 0
 	query := Queue{
-		UserID: m.Sender.ID,
-		Service: Service{
-			ServiceType: serviceName,
-		},
-	}
+		UserID: m.Sender.ID}
 	DB.Model(&query).Count(&count)
 	if count > service.Max-1 {
 		message = fmt.Sprintf("Your limit is %d, you are using %d", service.Max, count)
@@ -141,14 +138,12 @@ func addQueue(m telebot.Message, serviceName string, inputs ...interface{}) (mes
 			UserID:    m.Sender.ID,
 			UserName:  m.Sender.Username,
 			Parameter: m.Text,
-			Service: Service{
-				Name: serviceName,
-			},
-			Command: realCommand,
+			Command:   realCommand,
+			Service:   service,
 		}
 
 		DB.Create(&d)
-		message = fmt.Sprintf("%s Your command is `%s`", "Success!", realCommand)
+		message = fmt.Sprintf("%s Your command is `%s`", "Success\\!", realCommand)
 	}
 	return
 }
