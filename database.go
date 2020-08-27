@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/tucnak/telebot.v2"
 
 	"github.com/jinzhu/gorm"
 )
@@ -22,17 +23,19 @@ type BaseModel struct {
 
 type Service struct {
 	BaseModel
-	Name    string `gorm:"unique"`
-	Max     int
-	Command string
+	Name        string `gorm:"unique"`
+	Max         int
+	ServiceType string `gorm:"default: external"`
+	Command     string
 }
 
 type Queue struct {
 	BaseModel
-	UserID      int
-	UserName    string
-	Command     string
-	ServiceType string
+	UserID    int
+	UserName  string
+	Parameter string
+	Command   string
+	Service   Service `gorm:"foreignkey:ServiceRefer"`
 }
 
 type History struct {
@@ -41,6 +44,7 @@ type History struct {
 	UserName string
 	Command  string
 	Output   string
+	Service  Service `gorm:"foreignkey:ServiceRefer"`
 }
 
 type Session struct {
@@ -49,17 +53,27 @@ type Session struct {
 	Next   string
 }
 
+var supportedService []Service
+
 func init() {
-	var supportedService = []Service{
+	supportedService = []Service{
 		{
-			Name:    "Docker Hub",
-			Max:     5,
-			Command: "docker pull %s && docker rmi %s",
+			Name:        "Docker Hub",
+			Max:         5,
+			ServiceType: "external",
+			Command:     "docker pull %s && docker rmi %s",
 		},
 		{
-			Name:    "GitHub",
-			Max:     3,
-			Command: "git clone %s && rm -rf %s",
+			Name:        "GitHub",
+			Max:         3,
+			ServiceType: "external",
+			Command:     "git clone %s && rm -rf %s",
+		},
+		{
+			Name:        "GET",
+			Max:         10,
+			ServiceType: "internal",
+			Command:     "",
 		},
 	}
 	var err error
@@ -105,25 +119,34 @@ func getServiceMap() map[string]Service {
 	return a
 }
 
-func addQueue(userid int, username, keepType string, inputs ...interface{}) (message string) {
+func addQueue(m telebot.Message, serviceName string, inputs ...interface{}) (message string) {
 	// user id, commands
 	s := getServiceMap()
-	service := s[keepType]
+	service := s[serviceName]
 
 	realCommand := fmt.Sprintf(service.Command, inputs...)
 	// max than 5
 	count := 0
-	DB.Model(&Queue{}).Where("user_id = ? and service_type=?", userid, keepType).Count(&count)
-
-	if count > service.Max {
+	query := Queue{
+		UserID: m.Sender.ID,
+		Service: Service{
+			ServiceType: serviceName,
+		},
+	}
+	DB.Model(&query).Count(&count)
+	if count > service.Max-1 {
 		message = fmt.Sprintf("Your limit is %d, you are using %d", service.Max, count)
 	} else {
 		d := Queue{
-			UserID:      userid,
-			UserName:    username,
-			Command:     realCommand,
-			ServiceType: keepType,
+			UserID:    m.Sender.ID,
+			UserName:  m.Sender.Username,
+			Parameter: m.Text,
+			Service: Service{
+				Name: serviceName,
+			},
+			Command: realCommand,
 		}
+
 		DB.Create(&d)
 		message = fmt.Sprintf("%s Your command is `%s`", "Success!", realCommand)
 	}
@@ -151,4 +174,15 @@ func deleteSession(id int) {
 		UserID: id,
 	}
 	DB.Unscoped().Delete(&session)
+}
+
+func historyRecorder(v Queue, message string) {
+	h := History{
+		BaseModel: BaseModel{},
+		UserID:    v.UserID,
+		UserName:  v.UserName,
+		Command:   v.Command,
+		Output:    message,
+	}
+	DB.Create(&h)
 }

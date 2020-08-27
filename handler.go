@@ -14,6 +14,12 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+var messageMap = map[string]string{
+	"Docker Hub": "now tell me your repository, example `bennythink/keepmebot`",
+	"Github":     "now tell me your repository, example `https://github.com/BennyThink/KeepMeBot/`",
+	"GET":        "now tell me your url, example `https://github.com/BennyThink/KeepMeBot/`",
+}
+
 func start(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "Keep me bot by Benny")
@@ -40,7 +46,11 @@ func add(m *tb.Message) {
 
 func addServiceButton(c *tb.Callback) {
 	_ = b.Respond(c, &tb.CallbackResponse{Text: "Ok"})
-	_, _ = b.Send(c.Sender, fmt.Sprintf("You choose %s, now tell me your address ", c.Data))
+	_, _ = b.Send(c.Sender,
+		fmt.Sprintf("You choose %s, %s ", c.Data, messageMap[c.Data]),
+		&tb.SendOptions{
+			ParseMode: tb.ModeMarkdown,
+		})
 	setSession(c.Sender.ID, c.Data)
 }
 
@@ -79,7 +89,7 @@ func onText(m *tb.Message) {
 
 func dockerhub(m *tb.Message) (message string) {
 	text := shellescape.Quote(m.Text)
-	message = addQueue(m.Sender.ID, m.Sender.Username, "Docker Hub", text, text)
+	message = addQueue(*m, "Docker Hub", text, text)
 	deleteSession(m.Sender.ID)
 	return
 }
@@ -87,7 +97,7 @@ func dockerhub(m *tb.Message) (message string) {
 func github(m *tb.Message) (message string) {
 	text := shellescape.Quote(m.Text)
 	dest := fmt.Sprintf("%x", md5.Sum([]byte(text)))
-	message = addQueue(m.Sender.ID, m.Sender.Username, "GitHub", text+" "+dest, dest)
+	message = addQueue(*m, "GitHub", text+" "+dest, dest)
 	deleteSession(m.Sender.ID)
 	return
 }
