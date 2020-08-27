@@ -44,8 +44,8 @@ func main() {
 
 	c := cron.New()
 	//scheduler()
-	//_, _ = c.AddFunc("1 1 */3 * *", scheduler)
-	_, _ = c.AddFunc("* * * * *", scheduler)
+	// TODO we should implement different interval for different services
+	_, _ = c.AddFunc("1 1 */3 * *", scheduler)
 	c.Start()
 
 	b.Handle("/add", add)
