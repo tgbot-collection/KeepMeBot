@@ -15,6 +15,6 @@ default:
 clean:
 	@rm -rf builds
 
-tests:
-	@go test -v ./test/...
+test:
+	@go test -v -cover
 
