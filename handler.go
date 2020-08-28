@@ -140,3 +140,23 @@ func list(m *tb.Message) {
 	})
 
 }
+
+func history(m *tb.Message) {
+	var h []History
+	DB.Where("user_id=?", 260260121).Group("service_id").Having("max(created_at)").Find(&h)
+	// TODO seems buggy
+	//select *, max(created_at)
+	//from histories
+	//where user_id = 260260121
+	//group by service_id
+	_ = b.Notify(m.Sender, tb.Typing)
+	for i, v := range h {
+		message := fmt.Sprintf("%d. `%s`\n %s | %s", i+1, v.Command,
+			v.CreatedAt.Format("2006-01-02 15:04:05"), v.Output)
+
+		_, _ = b.Send(m.Sender, message, &tb.SendOptions{
+			ParseMode: tb.ModeMarkdown,
+		})
+	}
+
+}

@@ -176,6 +176,7 @@ func historyRecorder(v Queue, message string) {
 		UserName:  v.UserName,
 		Command:   v.Command,
 		Output:    message,
+		ServiceID: v.ServiceID,
 	}
 	DB.Create(&h)
 }

@@ -20,6 +20,7 @@ var b, err = tb.NewBot(tb.Settings{
 })
 
 func main() {
+
 	if err != nil {
 		log.Panicf("Please check your network or TOKEN! %v", err)
 	}
@@ -48,8 +49,8 @@ func main() {
 	c := cron.New()
 	switch os.Getenv("dev") {
 	case "true":
-		scheduler()
-		_, _ = c.AddFunc("*/2 * * * *", scheduler)
+		//scheduler()
+		//_, _ = c.AddFunc("*/2 * * * *", scheduler)
 		log.SetLevel(log.DebugLevel)
 	default:
 		_, _ = c.AddFunc("1 1 */3 * *", scheduler)
@@ -62,6 +63,7 @@ func main() {
 	b.Handle(tb.OnCallback, onCallback)
 	b.Handle("/start", start)
 	b.Handle("/list", list)
+	b.Handle("/history", history)
 	log.Infoln("I'm running...")
 	b.Start()
 }
