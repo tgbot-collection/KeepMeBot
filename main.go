@@ -49,7 +49,7 @@ func main() {
 	switch os.Getenv("dev") {
 	case "true":
 		scheduler()
-		_, _ = c.AddFunc("* * * * *", scheduler)
+		_, _ = c.AddFunc("*/2 * * * *", scheduler)
 		log.SetLevel(log.DebugLevel)
 	default:
 		_, _ = c.AddFunc("1 1 */3 * *", scheduler)

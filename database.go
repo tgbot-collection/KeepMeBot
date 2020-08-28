@@ -86,10 +86,8 @@ func init() {
 	// Migrate the schema
 	DB.AutoMigrate(&Service{}, &Queue{}, &History{}, &Session{})
 
-	// 创建
-	DB.Unscoped().Delete(&Service{})
 	for _, v := range supportedService {
-		DB.Create(&v)
+		DB.FirstOrCreate(&v, v)
 	}
 
 }

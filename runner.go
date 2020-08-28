@@ -24,13 +24,13 @@ func scheduler() {
 	DB.Find(&tasks)
 	log.Infof("Total tasks count: %d", len(tasks))
 	for i, v := range tasks {
-		log.Infof("Executing [%d/%d]: %s - %s(%d)", i+1, len(tasks), v.Command, v.UserName, v.UserID)
+		log.Infof("Executing [%d/%d]", i+1, len(tasks))
 		var message string
 		var s Service
 		DB.Model(&v).Related(&s)
 		switch s.ServiceType {
 		case "internal":
-			internalExecutor(v)
+			message = internalExecutor(v)
 		case "external":
 			message = externalExecutor(v)
 		default:
@@ -42,6 +42,8 @@ func scheduler() {
 }
 
 func externalExecutor(q Queue) string {
+	log.Infof("External Job for %s(%v):%s", q.UserName, q.UserID, q.Command)
+
 	var message string
 	cmd := exec.Command("sh", "-c", q.Command)
 	var out bytes.Buffer
@@ -60,9 +62,14 @@ func externalExecutor(q Queue) string {
 }
 
 func internalExecutor(q Queue) (s string) {
-	switch q.Service.Name {
+	log.Infof("Internal Job for %s(%v):%s", q.UserName, q.UserID, q.Command)
+	var ser Service
+	DB.Model(&q).Related(&ser)
+	switch ser.Name {
 	case "get":
 		s = get(q.Parameter)
+	default:
+		log.Warningln("Internal job not found.")
 	}
 	return
 }
@@ -72,7 +79,7 @@ func get(url string) (msg string) {
 	if err != nil {
 		msg = err.Error()
 	} else {
-		msg = fmt.Sprintf("%s", resp.StatusCode)
+		msg = fmt.Sprintf("http status code is %d", resp.StatusCode)
 		_ = resp.Body.Close()
 	}
 	return
