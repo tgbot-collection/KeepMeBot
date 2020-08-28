@@ -1,6 +1,8 @@
 # KeepMeBot
 Keep me running bot
 
+[![Build Status](https://travis-ci.org/BennyThink/KeepMeBot.svg?branch=master)](https://travis-ci.org/BennyThink/KeepMeBot)
+
 ## Support platform
 * docker hub
 

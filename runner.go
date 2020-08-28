@@ -10,6 +10,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"net/http"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
@@ -23,30 +24,63 @@ func scheduler() {
 	DB.Find(&tasks)
 	log.Infof("Total tasks count: %d", len(tasks))
 	for i, v := range tasks {
-		log.Infof("Executing [%d/%d]: %s - %s(%d)", i+1, len(tasks), v.Command, v.UserName, v.UserID)
-
+		log.Infof("Executing [%d/%d]", i+1, len(tasks))
 		var message string
-		cmd := exec.Command("bash", "-c", v.Command)
-		var out bytes.Buffer
-		var stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-		err := cmd.Run()
-		if err != nil {
-			message = fmt.Sprintf("%s %s", err, stderr.String())
-			log.Warningln(message)
-		} else {
-			message = out.String()
-			log.Infof(message)
+		var s Service
+		DB.Model(&v).Related(&s)
+		switch s.ServiceType {
+		case "internal":
+			message = internalExecutor(v)
+		case "external":
+			message = externalExecutor(v)
+		default:
+			log.Warningln("404")
 		}
 
-		h := History{
-			BaseModel: BaseModel{},
-			UserID:    v.UserID,
-			UserName:  v.UserName,
-			Command:   v.Command,
-			Output:    message,
-		}
-		DB.Create(&h)
+		historyRecorder(v, message)
 	}
+}
+
+func externalExecutor(q Queue) string {
+	log.Infof("External Job for %s(%v):%s", q.UserName, q.UserID, q.Command)
+
+	var message string
+	cmd := exec.Command("sh", "-c", q.Command)
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		message = fmt.Sprintf("%s %s", err, stderr.String())
+		log.Warningln(message)
+	} else {
+		message = out.String()
+		log.Infof(message)
+	}
+	return message
+}
+
+func internalExecutor(q Queue) (s string) {
+	log.Infof("Internal Job for %s(%v):%s", q.UserName, q.UserID, q.Command)
+	var ser Service
+	DB.Model(&q).Related(&ser)
+	switch ser.Name {
+	case "get":
+		s = get(q.Parameter)
+	default:
+		log.Warningln("Internal job not found.")
+	}
+	return
+}
+
+func get(url string) (msg string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		msg = err.Error()
+	} else {
+		msg = fmt.Sprintf("http status code is %d", resp.StatusCode)
+		_ = resp.Body.Close()
+	}
+	return
 }
