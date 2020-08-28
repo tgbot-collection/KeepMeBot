@@ -160,3 +160,11 @@ func history(m *tb.Message) {
 	}
 
 }
+
+func edited(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.RecordingVNote)
+	var message = `You can edit your message, you can rewrite history in Git - don't let them do it for real!
+Remember, remember!
+`
+	_, _ = b.Send(m.Sender, message)
+}
