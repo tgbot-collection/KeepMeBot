@@ -5,6 +5,10 @@ go:
 
 env: GO111MODULE=on
 
+branches:
+  except:
+    - slave
+
 arch:
   - amd64
   - arm64
