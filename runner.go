@@ -10,8 +10,10 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"net/http"
 	"os/exec"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -19,11 +21,26 @@ import (
 func scheduler() {
 
 	log.Infoln("Start scheduler")
-	log.Infoln("Get all tasks")
 	var tasks []Queue
+	var executeTasks []Queue
 	DB.Find(&tasks)
-	log.Infof("Total tasks count: %d", len(tasks))
-	for i, v := range tasks {
+	log.Infof("Total prepare tasks count: %d", len(tasks))
+
+	for _, item := range tasks {
+		var h History
+		var s Service
+		DB.Where("service_id=?", item.ServiceID).
+			Order("created_at desc").First(&h)
+		DB.Find(&h).Related(&s)
+		if time.Now().Sub(h.CreatedAt) > time.Duration(s.Interval*math.Pow10(9)) ||
+			h.UserID == 0 {
+			log.Infof("Add   %s(%v):%s to queue...", item.UserName, item.UserID, item.Command)
+			executeTasks = append(executeTasks, item)
+		}
+	}
+	log.Infof("Total execute tasks count: %d", len(executeTasks))
+
+	for i, v := range executeTasks {
 		log.Infof("Executing [%d/%d]", i+1, len(tasks))
 		var message string
 		var s Service

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/tucnak/telebot.v2"
+	"time"
 )
 
 // SQLite
@@ -25,7 +26,8 @@ type Service struct {
 	Name        string `gorm:"unique"`
 	Max         int
 	ServiceType string `gorm:"default: external"`
-	Command     string
+	Template    string
+	Interval    float64 `gorm:"default: 86400"` // seconds
 }
 
 type Queue struct {
@@ -62,19 +64,20 @@ func init() {
 			Name:        "Docker Hub",
 			Max:         5,
 			ServiceType: "external",
-			Command:     "docker pull %s && docker rmi %s",
+			Template:    "docker pull %s && docker rmi %s",
 		},
 		{
 			Name:        "GitHub",
 			Max:         3,
 			ServiceType: "external",
-			Command:     "git clone %s && rm -rf %s",
+			Template:    "git clone %s && rm -rf %s",
 		},
 		{
 			Name:        "get",
 			Max:         10,
 			ServiceType: "internal",
-			Command:     "get %s",
+			Template:    "get %s",
+			Interval:    time.Second.Seconds() * 60,
 		},
 	}
 	var err error
@@ -123,7 +126,7 @@ func addQueue(m telebot.Message, serviceName string, inputs ...interface{}) (mes
 	s := getServiceMap()
 	service := s[serviceName]
 
-	realCommand := fmt.Sprintf(service.Command, inputs...)
+	realCommand := fmt.Sprintf(service.Template, inputs...)
 	// max than 5
 	count := 0
 	query := Queue{

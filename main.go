@@ -49,11 +49,11 @@ func main() {
 	c := cron.New()
 	switch os.Getenv("dev") {
 	case "true":
-		//scheduler()
-		//_, _ = c.AddFunc("*/2 * * * *", scheduler)
+		scheduler()
+		_, _ = c.AddFunc("* * * * *", scheduler)
 		log.SetLevel(log.DebugLevel)
 	default:
-		_, _ = c.AddFunc("1 1 */3 * *", scheduler)
+		_, _ = c.AddFunc("*/15 * * * *", scheduler)
 	}
 
 	c.Start()
