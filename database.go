@@ -7,7 +7,9 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/tucnak/telebot.v2"
+	"os"
 	"time"
 )
 
@@ -58,7 +60,7 @@ type Session struct {
 
 var supportedService []Service
 
-func init() {
+func deferInit() {
 	supportedService = []Service{
 		{
 			Name:        "Docker Hub",
@@ -81,7 +83,16 @@ func init() {
 		},
 	}
 	var err error
-	DB, err = gorm.Open("sqlite3", "keep.db")
+	var dbFile string
+
+	switch os.Getenv("test") {
+	case "true":
+		dbFile = "test.db"
+	default:
+		dbFile = "keep.db"
+	}
+	log.Infof("Using %s as database", dbFile)
+	DB, err = gorm.Open("sqlite3", dbFile)
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -129,9 +140,8 @@ func addQueue(m telebot.Message, serviceName string, inputs ...interface{}) (mes
 	realCommand := fmt.Sprintf(service.Template, inputs...)
 	// max than 5
 	count := 0
-	query := Queue{
-		UserID: m.Sender.ID}
-	DB.Model(&query).Count(&count)
+	DB.Model(&Queue{}).Where("user_id=?", m.Sender.ID).Count(&count)
+	log.Infof("Check for %v, current %d", m.Sender.ID, count)
 	if count > service.Max-1 {
 		message = fmt.Sprintf("Your limit is %d, you are using %d", service.Max, count)
 	} else {
@@ -182,4 +192,13 @@ func historyRecorder(v Queue, message string) {
 		ServiceID: v.ServiceID,
 	}
 	DB.Create(&h)
+}
+
+func getHistory(userId int) (h []History) {
+	//select *, max(created_at)
+	//from histories
+	//where user_id = 260260121
+	//group by service_id
+	DB.Where("user_id=?", userId).Group("service_id").Having("max(created_at)").Find(&h)
+	return h
 }

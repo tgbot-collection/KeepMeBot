@@ -20,7 +20,7 @@ var b, err = tb.NewBot(tb.Settings{
 })
 
 func main() {
-
+	deferInit()
 	if err != nil {
 		log.Panicf("Please check your network or TOKEN! %v", err)
 	}
