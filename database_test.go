@@ -153,7 +153,7 @@ func TestHistoryRecorder(t *testing.T) {
 }
 
 func TestGetHistory(t *testing.T) {
-	h := getHistory(1234)
+	h := getNewestHistory(1234)
 	assert.Equal(t, "history command", h[0].Command)
 }
 

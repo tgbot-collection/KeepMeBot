@@ -142,7 +142,7 @@ func list(m *tb.Message) {
 }
 
 func history(m *tb.Message) {
-	h := getHistory(m.Sender.ID)
+	h := getNewestHistory(m.Sender.ID)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	for i, v := range h {

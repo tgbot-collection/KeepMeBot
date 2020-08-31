@@ -21,3 +21,4 @@
 /.idea/dataSources.local.xml
 /.idea/dataSources.xml
 /keep.db
+/.idea/*

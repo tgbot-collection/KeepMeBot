@@ -79,7 +79,7 @@ func deferInit() {
 			Max:         10,
 			ServiceType: "internal",
 			Template:    "get %s",
-			Interval:    time.Second.Seconds() * 60,
+			Interval:    time.Second.Seconds() * 10,
 		},
 	}
 	var err error
@@ -183,6 +183,7 @@ func deleteSession(id int) {
 }
 
 func historyRecorder(v Queue, message string) {
+	log.Infoln("Recording history ", message)
 	h := History{
 		BaseModel: BaseModel{},
 		UserID:    v.UserID,
@@ -194,7 +195,7 @@ func historyRecorder(v Queue, message string) {
 	DB.Create(&h)
 }
 
-func getHistory(userId int) (h []History) {
+func getNewestHistory(userId int) (h []History) {
 	//select *, max(created_at)
 	//from histories
 	//where user_id = 260260121

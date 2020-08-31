@@ -12,7 +12,9 @@ default:
 
 clean:
 	@rm -rf builds
+	@rm -f test.db
 
 test:
 	@go test -v -cover
+	@rm -f test.db
 
