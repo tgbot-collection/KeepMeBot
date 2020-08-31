@@ -3,3 +3,5 @@
 // Benny <benny.think@gmail.com>
 
 package main
+
+// it's very hard to test the handler unless we mock telebot.

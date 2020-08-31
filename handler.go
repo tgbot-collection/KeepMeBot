@@ -142,13 +142,8 @@ func list(m *tb.Message) {
 }
 
 func history(m *tb.Message) {
-	var h []History
-	DB.Where("user_id=?", 260260121).Group("service_id").Having("max(created_at)").Find(&h)
-	// TODO seems buggy
-	//select *, max(created_at)
-	//from histories
-	//where user_id = 260260121
-	//group by service_id
+	h := getHistory(m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	for i, v := range h {
 		message := fmt.Sprintf("%d. `%s`\n %s | %s", i+1, v.Command,
