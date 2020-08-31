@@ -143,8 +143,12 @@ func list(m *tb.Message) {
 
 func history(m *tb.Message) {
 	h := getNewestHistory(m.Sender.ID)
-
 	_ = b.Notify(m.Sender, tb.Typing)
+	if len(h) == 0 {
+		_, _ = b.Send(m.Sender, "A brave new world!")
+		return
+	}
+
 	for i, v := range h {
 		message := fmt.Sprintf("%d. `%s`\n %s | %s", i+1, v.Command,
 			v.CreatedAt.Format("2006-01-02 15:04:05"), v.Output)
