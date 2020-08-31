@@ -21,6 +21,23 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install make ; fi
 
 script:
+  - make test
   - make
   - make clean
-  - make test
+
+#after_success:
+#  - make
+#
+#deploy:
+#  provider: releases
+#  api_key: $GITHUB_OAUTH_TOKEN
+#  file_glob: true
+#  file: builds/*
+#  skip_cleanup: true
+#  prerelease: true
+#  on:
+#    repo: BennyThink/KeepMeBot
+#    branch: master
+#
+#after_deploy:
+#  - make clean
