@@ -1,10 +1,11 @@
-FROM alpine
+FROM golang:alpine
+
+ENV GO111MODULE=on
 
 WORKDIR /APP
 
-RUN apk update && apk add --no-cache wget && \
-wget https://github.com/BennyThink/KeepMeBot/releases/latest/download/keepmebot-linux-amd64 -O /APP/main && \
-chmod +x /APP/main
+RUN apk update && apk add --no-cache alpine-sdk git make musl-dev sqlite && \
+git clone https://github.com/BennyThink/KeepMeBot /APP && sh autogen.sh && go build -o main .
 
 CMD /APP/main
 

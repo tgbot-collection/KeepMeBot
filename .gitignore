@@ -22,3 +22,4 @@
 /.idea/dataSources.xml
 /keep.db
 /.idea/*
+/version.go

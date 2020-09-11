@@ -41,8 +41,9 @@ func main() {
 ▌ ▌         ▙▗▌     ▛▀▖
 ▙▞ ▞▀▖▞▀▖▛▀▖▌▘▌▞▀▖  ▙▄▘▌ ▌▛▀▖
 ▌▝▖▛▀ ▛▀ ▙▄▘▌ ▌▛▀ ▗▖▌▚ ▌ ▌▌ ▌
-▘ ▘▝▀▘▝▀▘▌  ▘ ▘▝▀▘▝▘▘ ▘▝▀▘▘ ▘ %s@%s by %s
-`, version, hash, "BennyThink")
+▘ ▘▝▀▘▝▀▘▌  ▘ ▘▝▀▘▝▘▘ ▘▝▀▘▘ ▘ 
+%s-%s at %s by %s
+`, hash, branch, compileTime, "BennyThink")
 
 	fmt.Printf("\n %c[1;32m%s%c[0m\n\n", 0x1B, banner, 0x1B)
 

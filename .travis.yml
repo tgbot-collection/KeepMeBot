@@ -13,38 +13,33 @@ arch:
   - amd64
 
 os:
-  - windows
-  - osx
   - linux
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then choco install make ; fi
 
 script:
-  - make test
   - make
-  - make clean
+  - make test
 
-after_success:
- - make
- 
-before_deploy:
-      # Set up git user name and tag this commit
-      - git config --local user.name "BennyThink"
-      - git config --local user.email "benny.think@gmail.com"
-      - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)} 
-      - git tag $TRAVIS_TAG
 
-deploy:
- provider: releases
- api_key: $GITHUB_OAUTH_TOKEN
- file_glob: true
- file: builds/*
- skip_cleanup: true
-#  prerelease: true
- on:
-   repo: BennyThink/KeepMeBot
-   branch: master
-
-after_deploy:
- - make clean
+#before_deploy:
+#      # Set up git user name and tag this commit
+#      - git config --local user.name "BennyThink"
+#      - git config --local user.email "benny.think@gmail.com"
+#      - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+#      - git tag $TRAVIS_TAG
+#
+#deploy:
+# provider: releases
+# api_key: $GITHUB_OAUTH_TOKEN
+# file_glob: true
+# file: builds/*
+# skip_cleanup: true
+##  prerelease: true
+# on:
+#   repo: BennyThink/KeepMeBot
+#   branch: master
+#
+#after_deploy:
+# - make clean
