@@ -1,11 +1,10 @@
-FROM docker
-
-ENV GO111MODULE=on
+FROM alpine
 
 WORKDIR /APP
 
-RUN apk update && apk add --no-cache git make musl-dev go sqlite && \
-git clone https://github.com/BennyThink/KeepMeBot /APP && go build -o main .
+RUN apk update && apk add --no-cache wget && \
+wget https://github.com/BennyThink/KeepMeBot/releases/latest/download/keepmebot-linux-amd64 -O /APP/main && \
+chmod +x /APP/main
 
 CMD /APP/main
 

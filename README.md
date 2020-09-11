@@ -18,8 +18,10 @@ vim config.env
 # create your db
 touch keep.db
 docker-compose up -d
-
 ```
+Of course you could build your own docker image
+`docker build -t keepmebot .
+
 ### How to update using docker-compose
 1. Use docker pull to update docker-image, and run again
 
