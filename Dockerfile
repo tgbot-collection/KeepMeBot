@@ -1,13 +1,21 @@
-FROM golang:alpine
+FROM golang:alpine as builder
 
 ENV GO111MODULE=on
 
-WORKDIR /APP
 
-RUN apk update && apk add --no-cache alpine-sdk git make musl-dev sqlite && \
-git clone https://github.com/BennyThink/KeepMeBot /APP && sh autogen.sh && go build -o main .
+RUN apk update && apk add alpine-sdk git make musl-dev sqlite && \
+git clone https://github.com/tgbot-collection/KeepMeBot /build && cd /build \
+&& sh autogen.sh && CGO_ENABLED=0 go build -a -ldflags '-s -w -extldflags "-static"' -o keep .
 
-CMD /APP/main
+
+FROM scratch
+
+COPY --from=builder /build/keep /keep
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+WORKDIR /
+
+ENTRYPOINT ["/keep"]
 
 # usage
 # docker build -t keepmebot .
