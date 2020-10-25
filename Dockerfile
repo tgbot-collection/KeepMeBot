@@ -5,10 +5,10 @@ ENV GO111MODULE=on
 
 RUN apk update && apk add alpine-sdk git make musl-dev sqlite && \
 git clone https://github.com/tgbot-collection/KeepMeBot /build && cd /build \
-&& sh autogen.sh && CGO_ENABLED=0 go build -a -ldflags '-s -w -extldflags "-static"' -o keep .
+&& sh autogen.sh && go build -a -ldflags '-s -w' -o keep .
 
 
-FROM scratch
+FROM alpine
 
 COPY --from=builder /build/keep /keep
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

@@ -94,7 +94,7 @@ func deferInit() {
 	log.Infof("Using %s as database", dbFile)
 	DB, err = gorm.Open("sqlite3", dbFile)
 	if err != nil {
-		panic("failed to connect database")
+		log.Panicf("failed to connect database %v", err)
 	}
 
 	// Migrate the schema
