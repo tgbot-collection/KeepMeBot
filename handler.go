@@ -9,8 +9,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/tgbot-collection/tgbot_ping"
 	"gopkg.in/alessio/shellescape.v1"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -158,6 +158,13 @@ func history(m *tb.Message) {
 		})
 	}
 
+}
+
+func ping(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.Typing)
+	bot := tgbot_ping.GetRuntime("botsrunner_keepme-runner_1", "KeepMeBot", "html")
+	docker := tgbot_ping.GetRuntime("botsrunner_keepme-docker_1", "KeepMeDocker", "html")
+	_, _ = b.Send(m.Chat, bot+"\n\n"+docker, &tb.SendOptions{ParseMode: tb.ModeHTML})
 }
 
 func edited(m *tb.Message) {

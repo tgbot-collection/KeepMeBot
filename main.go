@@ -65,6 +65,7 @@ func main() {
 	b.Handle("/start", start)
 	b.Handle("/list", list)
 	b.Handle("/history", history)
+	b.Handle("/ping", ping)
 	b.Handle(tb.OnEdited, edited)
 	log.Infoln("I'm running...")
 	b.Start()

@@ -6,6 +6,16 @@ Keep me running bot
 ## Support platform
 * docker hub
 
+## command
+```
+start - start using this bot
+help - what can it do
+list - list your service
+add - add new service
+history - is writter by whom?
+ping - ping server
+```
+
 ## run and deployment
 It's strongly recommend to use docker to run this bot 
 because we're about to running some system commands from untrusted sources.
