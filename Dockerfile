@@ -2,9 +2,12 @@ FROM golang:alpine as builder
 
 ENV GO111MODULE=on
 
-RUN apk update && apk add alpine-sdk tzdata git make musl-dev sqlite && \
-git clone https://github.com/tgbot-collection/KeepMeBot /build && cd /build \
-&& sh autogen.sh && go build -a -ldflags '-s -w' -o keep .
+RUN apk update && apk add --no-cache alpine-sdk tzdata  make musl-dev sqlite && mkdir /build
+COPY go.mod /build
+RUN cd /build && go mod download
+COPY . /build
+RUN cd /build && sh autogen.sh && go build -a -ldflags '-s -w' -o keep .
+
 
 
 FROM alpine
