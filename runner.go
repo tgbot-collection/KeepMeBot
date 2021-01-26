@@ -19,12 +19,11 @@ import (
 )
 
 func scheduler() {
-
-	log.Infoln("Start scheduler")
+	log.Debugln("Start scheduler")
 	var tasks []Queue
 	var executeTasks []Queue
 	DB.Find(&tasks)
-	log.Infof("Total prepare tasks count: %d", len(tasks))
+	log.Debugf("Total prepare tasks count: %d", len(tasks))
 
 	for _, item := range tasks {
 		var h History
@@ -34,11 +33,11 @@ func scheduler() {
 		DB.Find(&h).Related(&s)
 		if time.Now().Sub(h.CreatedAt) > time.Duration(s.Interval*math.Pow10(9)) ||
 			h.UserID == 0 {
-			log.Infof("Add   %s(%v):%s to queue...", item.UserName, item.UserID, item.Command)
+			log.Debugf("Add   %s(%v):%s to queue...", item.UserName, item.UserID, item.Command)
 			executeTasks = append(executeTasks, item)
 		}
 	}
-	log.Infof("Total execute tasks count: %d", len(executeTasks))
+	log.Debugf("Total execute tasks count: %d", len(executeTasks))
 
 	for i, v := range executeTasks {
 		log.Infof("Executing [%d/%d]", i+1, len(tasks))
@@ -73,7 +72,7 @@ func externalExecutor(q Queue) string {
 		log.Warningln(message)
 	} else {
 		message = out.String()
-		log.Infof(message)
+		log.Debugf(message)
 	}
 	return message
 }
